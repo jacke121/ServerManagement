@@ -2,11 +2,26 @@ import datetime
 import threading
 import subprocess
 import time
-
+from index import sql
+import json
 class taskset():
     def __init__(self):
         self.taskList=[]
-
+        lastTask = sql.selectTask()
+        if lastTask[0]:
+            for i in lastTask[1]:
+                self.CreatTask(json.loads(i[0]),writeToSql = False)
+        else:
+            print('从数据库恢复任务出错！')
+        '''
+        {'type':'week',
+        'week':'7',
+        'creatTime'：'2018-12-3 19:48',
+        'taskID':str(time.time()+random.random()),
+        'nextRunTime':time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()+int(interval))),
+        'value'："echo 666"
+        }
+        '''
     def TaskFunc(self,data):
         if data not in self.taskList:
             return True
@@ -17,10 +32,12 @@ class taskset():
         self.taskList.append(data)
         timer = threading.Timer(interval, self.TaskFunc,(data,))
         timer.start()
-    def CreatTask(self,data):
+    def CreatTask(self,data,writeToSql=True):
         interval = self.GetNextTaskSenc(data)
         data['nextRunTime'] = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()+int(interval)))
         self.taskList.append(data)
+        if writeToSql:
+            sql.insertTask(data)
         timer = threading.Timer(interval, self.TaskFunc,(data,))
         timer.start()
     def GetTaskList(self):
@@ -29,6 +46,7 @@ class taskset():
         for i in self.taskList:
             if i['taskID'] == taskID:
                 self.taskList.remove(i)
+                sql.deleteTask(i['taskID'])
     def GetNextTaskSenc(self,data):
         if data['type'] == 'senc':
             return int(data['senc'])

@@ -25,6 +25,7 @@ def login():
         if ( request.values.get('username') == username ) and ( request.values.get('password') == password ):
             session['password']=request.form['password']
             session['username']=request.form['username']
+            session['secectList'] = '[]'
             return redirect('/')
         else:
             return render_template('login.html',text = '账号或密码错误!')

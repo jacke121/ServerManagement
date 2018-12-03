@@ -251,10 +251,7 @@ def picVisit():
     #因为图片展示页面的div大小为800*800，所以根据图片高、宽等比例缩小
     h_pic=img.size[0]/800 
     w_pic=img.size[1]/800
-    if h_pic>=w_pic:
-        size=(int(img.size[0]/h_pic),int(img.size[1]/h_pic))
-    else:
-        size=(int(img.size[0]/w_pic),int(img.size[1]/w_pic))
+    size=(int(img.size[0]/h_pic),int(img.size[1]/h_pic) if h_pic>=w_pic else int(img.size[0]/w_pic),int(img.size[1]/w_pic))
     img = img.resize(size, Image.ANTIALIAS)
     name = os.path.join('temp',os.path.split(fileName)[1])
     img.save(name)
@@ -286,8 +283,24 @@ def Extract_():
         return json.dumps({'resultCode':0,'result':'success'})
     else:
         return json.dumps({'resultCode':1,'result':str(extractResult[1])})
-
-
+#将前端多选的文件记录到session
+@app.route('/secectList',methods=['POST'])
+def secectList():
+    types = request.values.get('type')
+    value = request.values.get('value')
+    sejson = json.loads(session['secectList'])
+    if (types == 'in') and (value not in sejson):
+        sejson += [value]
+        session['secectList'] = json.dumps(list(set(sejson)))
+    elif (types == 'out') and (value in sejson):
+        sejson.remove(value)
+        session['secectList'] = json.dumps(sejson)
+    elif types == 'del':
+        session['secectList'] = '[]'
+    elif types == 'get':
+        return json.dumps({'resultCode':0,'result':session['secectList']})
+    print(session['secectList'])
+    return json.dumps({'resultCode':0,'result':'success'})
 
 
 

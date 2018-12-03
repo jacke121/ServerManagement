@@ -32,6 +32,10 @@ class sqlClass(object):
                 CARETETIME    TEXT,
                 ROOTPWD       TEXT
                 );''')
+            self.con.execute('''CREATE TABLE TaskList 
+                (INFO    TEXT,
+                TASKID    TEXT
+                );''')
     def getTime(self):
         return time.strftime('%Y-%m-%d %H:%M:%S',time.localtime())
     #----------------------系统资源统计--------------------
@@ -92,3 +96,21 @@ class sqlClass(object):
         except Exception as e:
             result = [False,str(e)]
         return result
+    #----------------------定时任务--------------------
+    #写入任务
+    def insertTask(self,info):
+        self.con.execute("INSERT INTO TaskList (INFO,TASKID) VALUES (?,?)",(json.dumps(info),info['taskID']))
+        self.con.commit()
+    #查询任务
+    def selectTask(self):
+        try:
+            resultData = self.con.execute('SELECT * FROM TaskList').fetchall()
+            result = [True,resultData]
+        except Exception as e:
+            print('!!!!!!!',e)
+            result = [False,str(e)]
+        return result
+    #删除任务
+    def deleteTask(self,taskID):
+        self.con.execute('DELETE FROM TaskList WHERE TASKID = (?)',(taskID,))
+        self.con.commit()
