@@ -168,7 +168,7 @@ def RenameFile():
         oldFileName = b64decode_(request.values.get('oldFileName')) #原文件名,包含路径
         filePath = os.path.split(oldFileName)[0]     #提取路径
         oldFileName = os.path.split(oldFileName)[1]  #原文件名,不包含路径
-        if newFileName in os.listdir(filePath):
+        if os.path.exists(os.path.join(filePath,newFileName)):
             return json.dumps({'resultCode':1,'result':'新文件名和已有文件名重复!'})
         else:
             os.rename(os.path.join(filePath,oldFileName),os.path.join(filePath,newFileName))
@@ -184,7 +184,7 @@ def CreateDir():
     try:
         dirName = b64decode_(request.values.get('dirName'))
         path = b64decode_(request.values.get('path'))
-        if dirName in os.listdir(path):
+        if os.path.exists(os.path.join(path,dirName)):
             return json.dumps({'resultCode':1,'result':'目录已存在'})
         else:
             os.mkdir(os.path.join(path,dirName))
@@ -200,7 +200,7 @@ def CreateFile():
     try:
         fileName = b64decode_(request.values.get('fileName'))
         path = b64decode_(request.values.get('path'))
-        if fileName in os.listdir(path):
+        if os.path.exists(os.path.join(path,fileName)):
             return json.dumps({'resultCode':1,'result':'文件已存在'})
         else:
             open(os.path.join(path,fileName),'w',encoding='utf-8')
@@ -345,8 +345,10 @@ def copy_(copyFile,path):
         if os.path.isdir(copyFile):
             #将要复制过来的文件夹名
             newPath = os.path.join(path,os.path.split(copyFile)[1])
-            if newPath not in os.listdir(copyFile):
+            if not os.path.exists(os.path.join(path,copyFile)):
                 os.mkdir(newPath)
+            else:
+                return [False,'要复制的文件夹已存在！']
             for i in os.listdir(copyFile):
                 #拼接将要复制的文件全路径
                 i = os.path.join(copyFile,i)
@@ -356,13 +358,18 @@ def copy_(copyFile,path):
                 else:
                     shutil.copy(i,newPath)
         else:
-            shutil.copy(copyFile,path)
+            if not os.path.exists(os.path.join(path,copyFile)):
+                shutil.copy(copyFile,path)
+            else:
+                return [False,'要复制的文件已存在！']
     except Exception as e :
         return [False,e]
     else:
         return [True]
 def cut_(cutFile,path):
     try:
+        if os.path.exists(os.path.join(path,cutFile)):
+            return [False,'要剪切的文件已存在！']
         shutil.move(cutFile,path)
     except Exception as e :
         return [False,e]
