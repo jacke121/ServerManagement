@@ -345,7 +345,7 @@ def copy_(copyFile,path):
         if os.path.isdir(copyFile):
             #将要复制过来的文件夹名
             newPath = os.path.join(path,os.path.split(copyFile)[1])
-            if not os.path.exists(os.path.join(path,copyFile)):
+            if not os.path.exists(os.path.join(path,os.path.split(copyFile)[1])):
                 os.mkdir(newPath)
             else:
                 return [False,'要复制的文件夹已存在！']
@@ -358,7 +358,7 @@ def copy_(copyFile,path):
                 else:
                     shutil.copy(i,newPath)
         else:
-            if not os.path.exists(os.path.join(path,copyFile)):
+            if not os.path.exists(os.path.join(path,os.path.split(copyFile)[1])):
                 shutil.copy(copyFile,path)
             else:
                 return [False,'要复制的文件已存在！']
@@ -368,7 +368,7 @@ def copy_(copyFile,path):
         return [True]
 def cut_(cutFile,path):
     try:
-        if os.path.exists(os.path.join(path,cutFile)):
+        if os.path.exists(os.path.join(path,os.path.split(cutFile)[1])):
             return [False,'要剪切的文件已存在！']
         shutil.move(cutFile,path)
     except Exception as e :
